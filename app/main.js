@@ -21,10 +21,13 @@ const server = net.createServer((socket) => {
 
   socket.on("data", (data) => {
     let dataArr = parseInput(Buffer.from(data).toString());
+    let lastLine = dataArr[dataArr.length - 1];
+    const body = lastLine;
     let firstLine = dataArr[0];
     let thirdLine = dataArr[2];
     let firstLineData = firstLine.split(" ");
     let path = firstLineData[1];
+    let requestType = firstLineData[0];
     let thirdLineData = thirdLine.split(" ");
     let userAgent = thirdLineData[1];
 
@@ -42,16 +45,21 @@ const server = net.createServer((socket) => {
       );
     } else if (path.startsWith("/files/")) {
       let filename = path.slice(7);
-      try {
-        const fileContent = fs.readFileSync(
-          `${directory}/${filename}`,
-          "utf-8"
-        );
-        socket.write(
-          `HTTP/1.1 200 OK\nContent-Type: application/octet-stream\nContent-Length: ${fileContent.length}\n\n${fileContent}\r\n\r\n`
-        );
-      } catch (error) {
-        socket.write("HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n");
+      if (requestType === "GET") {
+        try {
+          const fileContent = fs.readFileSync(
+            `${directory}/${filename}`,
+            "utf-8"
+          );
+          socket.write(
+            `HTTP/1.1 200 OK\nContent-Type: application/octet-stream\nContent-Length: ${fileContent.length}\n\n${fileContent}\r\n\r\n`
+          );
+        } catch (error) {
+          socket.write("HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n");
+        }
+      } else if (requestType === "POST") {
+        fs.writeFileSync(`${directory}/${filename}`, body);
+        socket.write(`HTTP/1.1 201 OK\r\n\r\n`);
       }
     } else {
       socket.write("HTTP/1.1 404 Not Found\r\n\r\n");
