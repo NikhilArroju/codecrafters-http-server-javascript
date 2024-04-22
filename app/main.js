@@ -16,7 +16,7 @@ const server = net.createServer((socket) => {
   });
 
   socket.on("data", (data) => {
-    let dataArr = parseInput(data);
+    let dataArr = parseInput(Buffer.from(data).toString());
     let firstLine = dataArr[0];
     let firstLineData = firstLine.split(" ");
     let path = firstLineData[1];
