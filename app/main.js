@@ -30,22 +30,6 @@ function generateResponse(
   }
 }
 
-function generate200Response(content) {
-  if (content) {
-    return `HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: ${content.length}\n\n${content}\r\n\r\n`;
-  } else {
-    return `HTTP/1.1 200 OK\r\n\r\n`;
-  }
-}
-
-function generate201Response() {
-  return `HTTP/1.1 201 OK\r\n\r\n`;
-}
-
-function generate404Response(content = "") {
-  return `HTTP/1.1 404 Not Found\r\nContent-Length: ${content.length}\r\n\r\n`;
-}
-
 const server = net.createServer((socket) => {
   socket.on("close", () => {
     socket.end();
@@ -54,15 +38,10 @@ const server = net.createServer((socket) => {
 
   socket.on("data", (data) => {
     let dataArr = parseInput(Buffer.from(data).toString());
-    let lastLine = dataArr[dataArr.length - 1];
-    const body = lastLine;
-    let firstLine = dataArr[0];
-    let thirdLine = dataArr[2];
-    let firstLineData = firstLine.split(" ");
-    let path = firstLineData[1];
-    let requestType = firstLineData[0];
-    let thirdLineData = thirdLine.split(" ");
-    let userAgent = thirdLineData[1];
+    let path = dataArr[0].split(" ")[1];
+    let requestType = dataArr[0].split(" ")[0];
+    let userAgent = dataArr[2].split(" ")[1];
+    const body = dataArr[dataArr.length - 1];
 
     if (path === "/") {
       socket.write(generateResponse(200));
