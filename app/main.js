@@ -18,10 +18,18 @@ const server = net.createServer((socket) => {
   socket.on("data", (data) => {
     let dataArr = parseInput(Buffer.from(data).toString());
     let firstLine = dataArr[0];
+    let thirdLine = dataArr[2];
     let firstLineData = firstLine.split(" ");
     let path = firstLineData[1];
+    let thirdLineData = thirdLine.split(" ");
+    let userAgent = thirdLineData[1];
+
     if (path === "/") {
       socket.write("HTTP/1.1 200 OK\r\n\r\n");
+    } else if (path === "/user-agent") {
+      socket.write(
+        `HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: ${userAgent.length}\n\n${userAgent}\r\n\r\n`
+      );
     } else if (path.startsWith("/echo/")) {
       socket.write(
         `HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: ${
