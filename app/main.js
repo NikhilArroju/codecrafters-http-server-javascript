@@ -4,14 +4,27 @@ const net = require("net");
 // console.log("Logs from your program will appear here!");
 
 // Uncomment this to pass the first stage
+function parseInput(data) {
+  let arr = data.split("\r\n");
+  return arr;
+}
+
 const server = net.createServer((socket) => {
   socket.on("close", () => {
     socket.end();
     server.close();
   });
 
-  socket.on("data", () => {
-    socket.write("HTTP/1.1 200 OK\r\n\r\n");
+  socket.on("data", (data) => {
+    let dataArr = parseInput(data);
+    let firstLine = dataArr[0];
+    let firstLineData = firstLine.split(" ");
+    let path = firstLineData[1];
+    if (path === "/") {
+      socket.write("HTTP/1.1 200 OK\r\n\r\n");
+    } else {
+      socket.write("HTTP/1.1 404 Not Found\r\n\r\n");
+    }
   });
 });
 
