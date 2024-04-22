@@ -1,4 +1,8 @@
 const net = require("net");
+const { argv } = require("process");
+const fs = require("fs");
+
+const directory = argv[argv.indexOf("--directory") + 1];
 
 // You can use print statements as follows for debugging, they'll be visible when running tests.
 // console.log("Logs from your program will appear here!");
@@ -36,6 +40,19 @@ const server = net.createServer((socket) => {
           path.slice(6).length
         }\n\n${path.slice(6)}\r\n\r\n`
       );
+    } else if (path.startsWith("/files/")) {
+      let filename = path.slice(7);
+      try {
+        const fileContent = fs.readFileSync(
+          `${directory}/${filename}`,
+          "utf-8"
+        );
+        socket.write(
+          `HTTP/1.1 200 OK\nContent-Type: application/octet-stream\nContent-Length: ${fileContent.length}\n\n${fileContent}\r\n\r\n`
+        );
+      } catch (error) {
+        socket.write("HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n");
+      }
     } else {
       socket.write("HTTP/1.1 404 Not Found\r\n\r\n");
     }
